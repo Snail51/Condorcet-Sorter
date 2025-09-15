@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #result { white-space: pre-wrap; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Condorcet Sorter</h2>
+    <textarea id="input" placeholder="Enter strings separated by commas" oninput="window.ingest()"></textarea><br>
+    <div style="display: flex; flex-direction: row; padding: 5%">
+        <a id="optionA" href="#" onclick="window.optionA()" style="margin: 5%">OPTION1 NOT INIT</a>
+        <a id="optionB" href="#" onclick="window.optionB()" style="margin: 5%">OPTION2 NOT INIT</a>
+    </div>
+    <pre id="standings"></pre>
+
+    <script>
+        window.ingest = function() {
+            // convert the input into a dictionary of contestants
+            window.contestants = Object.fromEntries(
+                document.getElementById('input').value
+                .replaceAll(/[^\x00-\x7F]/g, "")
+                .split(/ ?, ?/)
+                .filter(string => string.length > 0)
+                .map(string => [string, 0])
+            );
+            window.numRounds = 0;
+            window.displayResults();
+
+            if(Object.keys(window.contestants).length >= 2)
+            {
+                window.makeMatchup();
+            }
+        }
+
+        window.makeMatchup = function()
+        {
+            // pick two random options
+            let optionA;
+            let optionB;
+            while(optionA === optionB)
+            {
+                let keys = Object.keys(window.contestants);
+                optionA = keys[Math.floor(Math.random() * keys.length)];
+                optionB = keys[Math.floor(Math.random() * keys.length)]; 
+            }
+            
+            // update the main voting <a>s to have proper code
+            document.getElementById("optionA").innerText = optionA;
+            window.optionA = function()
+            {
+                window.contestants[optionA]++;
+                window.numRounds++;
+                window.makeMatchup();
+                window.displayResults();
+            }
+            document.getElementById("optionB").innerText = optionB;
+            window.optionB = function()
+            {
+                window.contestants[optionB]++;
+                window.numRounds++;
+                window.makeMatchup();
+                window.displayResults();
+            }
+            
+        }
+
+        window.displayResults = function()
+        {
+            // squash and sort the object into a sorted array of arrays and then pretend it is an object and draw
+            document.getElementById("standings").innerText = `Rounds: ${window.numRounds}\n\n\n` + JSON.stringify(Object.entries(window.contestants).sort(([,a], [,b]) => b - a).map((a) => `${a.toString().replaceAll(/\,/g, ":")}`),null,"\t").replaceAll(/[\[]/g, "{").replaceAll(/[\]]/g, "}");
+        }
+    </script>
+</body>
+</html>
