@@ -9,19 +9,14 @@
     </head>
     <body>
         <h2>Condorcet Sorter</h2>
-        <textarea id="input" placeholder="Enter strings separated by commas" oninput="window.ingest()"></textarea><br>
-        
+
+        <input type="file" multiple id="input_candidates" name="candidates" onchange="window.ingest()"/>
 
         <script>
             window.ingest = function() {
                 // convert the input into a dictionary of contestants
-                window.contestants = Object.fromEntries(
-                    document.getElementById('input').value
-                    .replaceAll(/[^\x00-\x7F]/g, "")
-                    .split(/ ?, ?/)
-                    .filter(string => string.length > 0)
-                    .map(string => [string, 0])
-                );
+                window.contestants = Array.from(document.getElementById("input_candidates").files).map(file => ({file, score: 0}));
+
                 window.numRounds = 0;
                 window.displayResults();
 
@@ -33,9 +28,13 @@
 
             window.makeMatchup = function()
             {
-                // pick two random options
+                
                 let optionA;
                 let optionB;
+                let urlA;
+                let urlB;
+
+                // pick two random options
                 while(optionA === optionB)
                 {
                     let keys = Object.keys(window.contestants);
@@ -43,19 +42,44 @@
                     optionB = keys[Math.floor(Math.random() * keys.length)]; 
                 }
                 
+
+
                 // update the main voting <a>s to have proper code
-                document.getElementById("optionA").innerText = optionA;
+                document.getElementById("optionA").innerText = window.contestants[optionA].file.name;
+
+                // update the main voting <iframe>s to have proper content
+                if(urlA)
+                {
+                    URL.revokeObjectURL(urlA);
+                }
+                window.urlA = URL.createObjectURL(window.contestants[optionA].file);
+                document.getElementById("iframeA").src = window.urlA;
+
+                // update the voting function to reflect its new payload
                 window.optionA = function()
                 {
-                    window.contestants[optionA]++;
+                    window.contestants[optionA].score++;
                     window.numRounds++;
                     window.makeMatchup();
                     window.displayResults();
                 }
-                document.getElementById("optionB").innerText = optionB;
+
+
+                // update the main voting <a>s to have proper code
+                document.getElementById("optionB").innerText = window.contestants[optionB].file.name;
+
+                // update the main voting <iframe>s to have proper content
+                if(urlB)
+                {
+                    URL.revokeObjectURL(urlB);
+                }
+                window.urlB = URL.createObjectURL(window.contestants[optionB].file);
+                document.getElementById("iframeB").src = window.urlB;
+
+                // update the voting function to reflect its new payload
                 window.optionB = function()
                 {
-                    window.contestants[optionB]++;
+                    window.contestants[optionB].score++;
                     window.numRounds++;
                     window.makeMatchup();
                     window.displayResults();
@@ -65,11 +89,15 @@
 
             
 
-            window.displayResults = function()
-            {
-                // squash and sort the object into a sorted array of arrays and then pretend it is an object and draw
-                document.getElementById("standings").innerText = `Rounds: ${window.numRounds}\n\n\n` + JSON.stringify(Object.entries(window.contestants).sort(([,a], [,b]) => b - a).map((a) => `${a.toString().replaceAll(/\,/g, ":")}`),null,"\t").replaceAll(/[\[]/g, "{").replaceAll(/[\]]/g, "}");
-            }
+            window.displayResults = function () {
+                const sorted = [...window.contestants]
+                    .sort((a, b) => b.score - a.score)
+                    .map(c => `"${c.file.name}",${c.score}`);
+
+                document.getElementById("standings").innerText =
+                    `Rounds: ${window.numRounds}\n\n\n` +
+                    sorted.join("\n");
+            };
         </script>
 
         <div style="display: flex; flex-direction: row;">
@@ -79,6 +107,7 @@
             >
                 <p style="margin-top: 3vmin;"> </p>
                 <iframe
+                    id="iframeA"
                     src="./README.md"
                     style="width: 100%; height: 50vh; border: none; "
                     title="File preview"
@@ -93,7 +122,8 @@
             >
                 <p style="margin-top: 3vmin;"> </p>
                 <iframe
-                    src="./exampleVideo.mp4"
+                    id="iframeB"
+                    src="./Nicolas_de_Condorcet.png"
                     style="width: 100%; height: 50vh; border: none; "
                     title="File preview"
                 ></iframe>
