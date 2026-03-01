@@ -76,6 +76,14 @@ export class Condorcet {
             optionA = Math.floor(Math.random() * this.contestants.length);
             optionB = 0; 
         }
+
+        // half of the time, use optionA to hold the least frequently evaluated option instead of optionB
+        if(Math.round(Math.random()) == 1)
+        {
+            let holder = optionA;
+            optionA = optionB;
+            optionB = holder;
+        }
         
         // update optionA's display and code
         this.linkA.innerText = this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionA].file.name; // update the main voting <a>s to have proper code
@@ -89,24 +97,24 @@ export class Condorcet {
             this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionA].score++;
             this.numRounds++;
             this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionA].evaluations++;
-            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[0].evaluations++;
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionB].evaluations++;
             this.makeMatchup();
             this.displayResults();
         }
 
         // update optionB's display and code
-        this.linkB.innerText = this.contestants.sort((a, b) => a.evaluations - b.evaluations)[0].file.name; // update the main voting <a>s to have proper code
+        this.linkB.innerText = this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionB].file.name; // update the main voting <a>s to have proper code
         this.renderPreview( // update the main voting previews to have proper content
             this.previewB,
-            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[0].file,
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionB].file,
             this.urlObjectB
         );
         this.optionB = function() // update the voting function to reflect its new payload
         {
-            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[0].score++;
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionB].score++;
             this.numRounds++;
             this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionA].evaluations++;
-            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[0].evaluations++;
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionB].evaluations++;
             this.makeMatchup();
             this.displayResults();
         }
@@ -119,7 +127,7 @@ export class Condorcet {
     {
         const sorted = [...this.contestants]
             .sort((a, b) => b.score - a.score)
-            .map(c => `"${c.file.name}",${c.score},${c.evaluations}`);
+            .map(c => `"${c.file.name}",score:${c.score},evaluations:${c.evaluations}`);
 
         this.results.innerText =
             `Rounds: ${this.numRounds}\n\n\n` +
