@@ -1,0 +1,120 @@
+Redundant Array of Inexpensive Disks - RAID (Shadow Legends)
+├── ​Meta
+│   ​├── ​Users
+│   ​│   ​├── ​Brendan Rood
+│   ​│   ​│   ​├── ​Student
+│   ​│   ​│   ​└── ​Note Author
+│   ​│   ​├── ​Peter Peterson
+│   ​│   ​│   ​└── ​Professor
+│   ​│   ​└── ​Sadia Swarna
+│   ​│   ​    ​└── ​Course TA
+│   ​├── ​Timestamp
+│   ​│   ​├── ​12/04/23
+│   ​│   ​│   ​└── ​10:00am
+│   ​│   ​└── ​12/06/23
+│   ​│   ​    ​└── ​10:00am
+│   ​├── ​Class
+│   ​│   ​├── ​Operating Systems
+│   ​│   ​└── ​CS-4312
+│   ​└── ​Relevant Sources
+│   ​    ​└── ​OS:TEP Chapter 38
+├── ​Notes
+│   ​├── ​The RAID
+│   ​│   ​├── ​What is it?
+│   ​│   ​│   ​└── ​Way to create larger, faster, more robust disks
+│   ​│   ​├── ​History
+│   ​│   ​│   ​├── ​Late 1980s
+│   ​│   ​│   ​├── ​Patterson
+│   ​│   ​│   ​├── ​Katz
+│   ​│   ​│   ​└── ​Gibson
+│   ​│   ​├── ​From the Outside
+│   ​│   ​│   ​├── ​Multiple disks
+│   ​│   ​│   ​├── ​CPU
+│   ​│   ​│   ​├── ​memory
+│   ​│   ​│   ​└── ​lots of storage
+│   ​│   ​├── ​Hardware/Software implementation
+│   ​│   ​│   ​├── ​RAID can be made possible via hardware
+│   ​│   ​│   ​│   ​├── ​Self-isolated physical system that merges the disks into a raid externally
+│   ​│   ​│   ​│   ​└── ​Provides interface to computer
+│   ​│   ​│   ​└── ​RAID can be made possible via software
+│   ​│   ​│   ​    ​└── ​Everything managed by the computer controlling it 
+│   ​│   ​├── ​Multiple Advantages
+│   ​│   ​│   ​├── ​More size
+│   ​│   ​│   ​├── ​More performance
+│   ​│   ​│   ​├── ​More Reliability
+│   ​│   ​│   ​└── ​Easy to deploy
+│   ​│   ​└── ​Interface
+│   ​│   ​    ​├── ​Identical to a single disk, just appears large fast and reliable
+│   ​│   ​    ​├── ​Logical IO is converted into physical IO
+│   ​│   ​    ​├── ​"Mirroring" - data fully duplicated to multiple disks
+│   ​│   ​    ​├── ​"Striping" - data spread across two disks
+│   ​│   ​    ​└── ​"Parity" - ???
+│   ​├── ​Fault Model: Fail Stop
+│   ​│   ​└── ​We are assuming that as soon as a RAID fails it does so completely and informs the user
+│   ​├── ​Performance Metrics
+│   ​│   ​├── ​"Single request latency" - how long to get to one sector?
+│   ​│   ​└── ​"Steady-state throughput" - how much data per second can it provide?
+│   ​├── ​RAID Levels
+│   ​│   ​├── ​RAID 0 - SPEED
+│   ​│   ​│   ​├── ​Summary
+│   ​│   ​│   ​│   ​├── ​Striping is for speed
+│   ​│   ​│   ​│   ​└── ​No redundancy
+│   ​│   ​│   ​└── ​Performance
+│   ​│   ​│   ​    ​├── ​Sequential = S * N
+│   ​│   ​│   ​    ​├── ​Random = R * N
+│   ​│   ​│   ​    ​└── ​Where N is the number of disks
+│   ​│   ​├── ​RAID 1 - Redundancy
+│   ​│   ​│   ​├── ​Summary
+│   ​│   ​│   ​│   ​├── ​1:1 Mirroring - N-1 disks can fail
+│   ​│   ​│   ​│   ​├── ​Needs at least 2 disks
+│   ​│   ​│   ​│   ​├── ​All writes happen on both disks
+│   ​│   ​│   ​│   ​└── ​Reads can come from either disk
+│   ​│   ​│   ​└── ​Analysis
+│   ​│   ​│   ​    ​├── ​Space-expensive; (N*B)/N -  half the space of the total disks
+│   ​│   ​│   ​    ​├── ​Reliability; good - can tolerate at least one disk failure
+│   ​│   ​│   ​    ​├── ​Read; OK, can sometimes be better
+│   ​│   ​│   ​    ​└── ​Write; slightly worse since both writes must complete to count as complete
+│   ​│   ​├── ​RAID 10 - 1 + 0
+│   ​│   ​│   ​├── ​Summary
+│   ​│   ​│   ​│   ​├── ​Mirrored AND Striped
+│   ​│   ​│   ​│   ​└── ​RAID 1 and RAID 0
+│   ​│   ​│   ​└── ​Performance
+│   ​│   ​│   ​    ​├── ​Sequential
+│   ​│   ​│   ​    ​│   ​└── ​logical writes require two physical writes
+│   ​│   ​│   ​    ​└── ​Random
+│   ​│   ​│   ​    ​    ​├── ​Reads = N * B * R; slightly better
+│   ​│   ​│   ​    ​    ​└── ​Writes are still = N * B / 2 * R
+│   ​│   ​├── ​RAID 4 - Basic Parity
+│   ​│   ​│   ​├── ​Summary
+│   ​│   ​│   ​│   ​├── ​We will trade some space for reliability, but less!
+│   ​│   ​│   ​│   ​├── ​One disk is sacrificed to store recovery information
+│   ​│   ​│   ​│   ​├── ​XOR all blocks together and store it as parity
+│   ​│   ​│   ​│   ​├── ​If one block has an error, can find its original value based off the parity
+│   ​│   ​│   ​│   ​└── ​Supports ONE disk failure
+│   ​│   ​│   ​├── ​Issues
+│   ​│   ​│   ​│   ​├── ​All writes will modify the parity disk
+│   ​│   ​│   ​│   ​└── ​Results in additional wear on parity disk
+│   ​│   ​│   ​└── ​Analysis
+│   ​│   ​│   ​    ​├── ​Capacity
+│   ​│   ​│   ​    ​│   ​└── ​Useful space is (N-1)*B
+│   ​│   ​│   ​    ​├── ​Reliability
+│   ​│   ​│   ​    ​│   ​└── ​Tolerates 1 disk failure
+│   ​│   ​│   ​    ​└── ​Performance
+│   ​│   ​│   ​    ​    ​├── ​Overview
+│   ​│   ​│   ​    ​    ​│   ​├── ​Sequential reads = (N-1)S MB/s
+│   ​│   ​│   ​    ​    ​│   ​├── ​Sequential writes = full stripe write
+│   ​│   ​│   ​    ​    ​│   ​└── ​Compute parity and write all blocks in parallel = (N-1)S MB/s
+│   ​│   ​│   ​    ​    ​├── ​1 block random reads
+│   ​│   ​│   ​    ​    ​│   ​└── ​(N-1)R on average
+│   ​│   ​│   ​    ​    ​└── ​1 block random writes
+│   ​│   ​│   ​    ​    ​    ​├── ​Modify a block AND redo parity
+│   ​│   ​│   ​    ​    ​    ​└── ​Recalculating parity will be slower than writing because it requires reading all other blocks, doing math, and then writing
+│   ​│   ​└── ​RAID 5 - Rotating Parity
+│   ​│   ​    ​└── ​Summary
+│   ​│   ​    ​    ​├── ​Parity is striped across all disks
+│   ​│   ​    ​    ​└── ​Spreads wear across all disks
+│   ​└── ​Note about RAID calculations
+│   ​    ​├── ​DO NOT SPEND TIME MEMORIZING SPECIFIC CALCULATIONS
+│   ​    ​└── ​Table will be given, just know what each var represents
+└── ​Participation
+    ​└── ​10:15am - Provided insight about modern HDD sizes -> 18TB is where it stops making financial sense
