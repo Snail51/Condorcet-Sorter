@@ -6,171 +6,24 @@
             #result { white-space: pre-wrap; margin-top: 20px; }
             a { color: cyan;}
         </style>
+
+
+        <script type="module">
+            import { Condorcet } from "./code/src/condorcet.js";
+            window.main = new Condorcet(
+                document.getElementById("input_candidates"), 
+                document.getElementById("standings"),
+                document.getElementById("optionA"),
+                document.getElementById("previewA"),
+                document.getElementById("optionB"),
+                document.getElementById("previewB")
+            );
+        </script>
     </head>
     <body>
         <h2>Condorcet Sorter</h2>
 
-        <input type="file" multiple id="input_candidates" name="candidates" onchange="window.ingest()"/>
-
-        <script>
-            window.ingest = function() {
-                // convert the input into a dictionary of contestants
-                window.contestants = Array.from(document.getElementById("input_candidates").files).map(file => ({file, score: 0}));
-
-                window.numRounds = 0;
-                window.displayResults();
-
-                if(Object.keys(window.contestants).length >= 2)
-                {
-                    window.makeMatchup();
-                }
-            }
-
-            window.makeMatchup = function()
-            {
-                
-                let optionA;
-                let optionB;
-                let urlA;
-                let urlB;
-
-                // pick two random options
-                while(optionA === optionB)
-                {
-                    let keys = Object.keys(window.contestants);
-                    optionA = keys[Math.floor(Math.random() * keys.length)];
-                    optionB = keys[Math.floor(Math.random() * keys.length)]; 
-                }
-                
-
-
-                // update the main voting <a>s to have proper code
-                document.getElementById("optionA").innerText = window.contestants[optionA].file.name;
-
-                // update the main voting previewss to have proper content
-                window.renderPreview(
-                    "previewA",
-                    window.contestants[optionA].file,
-                    "urlA"
-                );
-
-                // update the voting function to reflect its new payload
-                window.optionA = function()
-                {
-                    window.contestants[optionA].score++;
-                    window.numRounds++;
-                    window.makeMatchup();
-                    window.displayResults();
-                }
-
-
-                // update the main voting <a>s to have proper code
-                document.getElementById("optionB").innerText = window.contestants[optionB].file.name;
-
-                // update the main voting previews to have proper content
-                window.renderPreview(
-                    "previewB",
-                    window.contestants[optionB].file,
-                    "urlB"
-                );
-
-                // update the voting function to reflect its new payload
-                window.optionB = function()
-                {
-                    window.contestants[optionB].score++;
-                    window.numRounds++;
-                    window.makeMatchup();
-                    window.displayResults();
-                }
-                
-            }
-
-            
-
-            window.displayResults = function () {
-                const sorted = [...window.contestants]
-                    .sort((a, b) => b.score - a.score)
-                    .map(c => `"${c.file.name}",${c.score}`);
-
-                document.getElementById("standings").innerText =
-                    `Rounds: ${window.numRounds}\n\n\n` +
-                    sorted.join("\n");
-            };
-
-
-
-
-            window.renderPreview = function(containerId, file, oldUrlRefName) {
-                const container = document.getElementById(containerId);
-                const iframeTypes = ["text/plain", "application/pdf", "application/json"];
-
-                // revoke old blob URL if present
-                if (window[oldUrlRefName]) {
-                    if(window[oldUrlRefName].pause)
-                    {
-                        window[oldUrlRefName].pause();
-                    }
-                    URL.revokeObjectURL(window[oldUrlRefName]);
-                }
-
-                const url = URL.createObjectURL(file);
-                window[oldUrlRefName] = url;
-
-                // clear container
-                container.innerHTML = "";
-
-                let el;
-
-                // infer type from file MIME
-                if (file.type.startsWith("audio/")) {
-                    // audios into audio
-                    el = document.createElement("audio");
-                    el.controls = true;
-                    el.autoplay = false;
-                    el.src = url;
-                    el.style.width = "100%";
-
-                } else if (file.type.startsWith("video/")) {
-                    // videos into video
-                    el = document.createElement("video");
-                    el.controls = true;
-                    el.autoplay = false;
-                    el.src = url;
-                    el.style.width = "100%";
-                    el.style.height = "50vh";
-
-                } else if (file.type.startsWith("image/")) {
-                    // images into img
-                    el = document.createElement("img");
-                    el.src = url;
-                    el.style.width = "100%";
-                    el.style.height = "50vh";
-                    el.style.objectFit = "contain";
-
-                } else if (iframeTypes.includes(file.type)) {
-                    // iframes for documents
-                    el = document.createElement("iframe");
-                    el.src = url;
-                    el.style.width = "100%";
-                    el.style.height = "50vh";
-                    el.style.objectFit = "contain";
-
-                
-                } else {
-                    // FALLBACK → pre
-                    el = document.createElement("pre");
-                    el.innerText = file.name;
-                    el.style.width = "100%";
-                    el.style.height = "50vh";
-                    el.style.border = "none";
-                    el.title = "File preview";
-                }
-
-                container.appendChild(el);
-            };
-
-
-        </script>
+        <input type="file" multiple id="input_candidates" name="candidates" onchange="window.main.ingest()"/>
 
         <div style="display: flex; flex-direction: row;">
             <div
@@ -180,7 +33,7 @@
                 <p style="margin-top: 3vmin;"> </p>
                 <div id="previewA" style="width: 95%; height: 50vh; margin: 2%;"></div>
                 <p style="margin-top: 1vmin;"> </p>
-                <b style="font-size: 3.5vmin;"><a id="optionA" href="#" onclick="window.optionA()" style="margin: 5%">OPTION1 NOT INIT</a></b>
+                <b style="font-size: 3.5vmin;"><a id="optionA" href="#" onclick="window.main.optionA()" style="margin: 5%">OPTION1 NOT INIT</a></b>
                 <p style="margin-bottom: 1vmin;"> </p>
             </div>
             <div
@@ -190,7 +43,7 @@
                 <p style="margin-top: 3vmin;"> </p>
                 <div id="previewB" style="width: 95%; height: 50vh; margin: 2%;"></div>
                 <p style="margin-top: 1vmin;"> </p>
-                <b style="font-size: 3.5vmin;"><a id="optionB" href="#" onclick="window.optionB()" style="margin: 5%">OPTION2 NOT INIT</a></b>
+                <b style="font-size: 3.5vmin;"><a id="optionB" href="#" onclick="window.main.optionB()" style="margin: 5%">OPTION2 NOT INIT</a></b>
                 <p style="margin-bottom: 1vmin;"> </p>
             </div>
         </div>
