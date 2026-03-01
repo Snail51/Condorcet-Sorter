@@ -11,8 +11,8 @@ export class Condorcet {
 
         // internal holding structures
         this.contestants = new Array();             // Array<Array<File,int>>
-        this.urlObjectA = "A";                      // string : urlObject blob string
-        this.urlObjectB = "B";                      // string : urlObject blob string
+        this.urlObjectA = "INITIAL PLACEHOLDER A";  // string : urlObject blob string
+        this.urlObjectB = "INITIAL PLACEHOLDER B";  // string : urlObject blob string
         this.numRounds = 0;
 
         // static executive configuration
@@ -25,7 +25,7 @@ export class Condorcet {
     ingest()
     {
         // convert the input into a dictionary of contestants
-        this.contestants = Array.from(this.contestants_input.files).map(file => ({file, score: 0}));
+        this.contestants = Array.from(this.contestants_input.files).map(file => ({file, score: 0, evaluations: 0}));
 
         this.numRounds = 0;
 
@@ -67,43 +67,46 @@ export class Condorcet {
      */
     makeMatchup()
     {
-        let optionA;
-        let optionB;
+        let optionA = 0;
+        let optionB = 0;
 
         // pick two random options (numerical indices)
         while(optionA === optionB)
         {
-            let keys = Object.keys(this.contestants);
-            optionA = keys[Math.floor(Math.random() * keys.length)];
-            optionB = keys[Math.floor(Math.random() * keys.length)]; 
+            optionA = Math.floor(Math.random() * this.contestants.length);
+            optionB = 0; 
         }
         
         // update optionA's display and code
-        this.linkA.innerText = this.contestants[optionA].file.name; // update the main voting <a>s to have proper code
+        this.linkA.innerText = this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionA].file.name; // update the main voting <a>s to have proper code
         this.renderPreview( // update the main voting previews to have proper content
             this.previewA,
-            this.contestants[optionA].file,
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionA].file,
             this.urlObjectA
         );
         this.optionA = function() // update the voting function to reflect its new payload
         {
-            this.contestants[optionA].score++;
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionA].score++;
             this.numRounds++;
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionA].evaluations++;
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[0].evaluations++;
             this.makeMatchup();
             this.displayResults();
         }
 
         // update optionB's display and code
-        this.linkB.innerText = this.contestants[optionB].file.name; // update the main voting <a>s to have proper code
+        this.linkB.innerText = this.contestants.sort((a, b) => a.evaluations - b.evaluations)[0].file.name; // update the main voting <a>s to have proper code
         this.renderPreview( // update the main voting previews to have proper content
             this.previewB,
-            this.contestants[optionB].file,
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[0].file,
             this.urlObjectB
         );
         this.optionB = function() // update the voting function to reflect its new payload
         {
-            this.contestants[optionB].score++;
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[0].score++;
             this.numRounds++;
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionA].evaluations++;
+            this.contestants.sort((a, b) => a.evaluations - b.evaluations)[0].evaluations++;
             this.makeMatchup();
             this.displayResults();
         }
@@ -116,7 +119,7 @@ export class Condorcet {
     {
         const sorted = [...this.contestants]
             .sort((a, b) => b.score - a.score)
-            .map(c => `"${c.file.name}",${c.score}`);
+            .map(c => `"${c.file.name}",${c.score},${c.evaluations}`);
 
         this.results.innerText =
             `Rounds: ${this.numRounds}\n\n\n` +
