@@ -100,6 +100,7 @@ export class Condorcet {
             this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionB].evaluations++;
             this.makeMatchup();
             this.displayResults();
+            this.scrollToMatchup();
         }
 
         // update optionB's display and code
@@ -117,6 +118,7 @@ export class Condorcet {
             this.contestants.sort((a, b) => a.evaluations - b.evaluations)[optionB].evaluations++;
             this.makeMatchup();
             this.displayResults();
+            this.scrollToMatchup();
         }
     }
 
@@ -133,6 +135,21 @@ export class Condorcet {
             `Rounds: ${this.numRounds}\n\n\n` +
             sorted.join("\n");
     };
+
+    /**
+     * After a given delay, scroll the view so the matchup is centered
+     * @param {int} delay - millisecond delay after which the scroll should happen 
+     */
+    scrollToMatchup(delay = 100)
+    {
+        window.setTimeout(() => { this.previewA.scrollIntoView(
+            {
+                //behavior: 'smooth',
+                block: 'center',
+                inline: 'end'
+            }
+        ) }, delay);
+    }
 
     /**
      * insert the provided data into the preview <divs>
